@@ -1,0 +1,42 @@
+[package]
+edition = "2018"
+name = "space6"
+version = "0.1.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+crate-type = ["cdylib"]
+path = "src/Model/lib.rs"
+
+[dependencies]
+console_error_panic_hook = "0.1.6"
+console_log = {version = "0.2.0", features = ["color"]}
+enum-map = "1.1.1"
+getrandom = {version = "0.2", features = ["js"]}
+js-sys = "0.3.55"
+log = "0.4.14"
+nalgebra = {version = "0.25.4", features = ["serde-serialize"]}
+noise = "0.7.0"
+ordered-float = {version = "2.7.0", features = ["rand"]}
+poisson-diskus = "1.0.0"
+rand = "0.8.0"
+rand_core = "0.6.3"
+rand_distr = "0.4.1"
+rstar = "0.9.1"
+serde = {version = "1.0.129", features = ["derive"]}
+voronoice = "0.1.0"
+wasm-bindgen = {version = "0.2.74", features = ["serde-serialize"]}
+
+[dependencies.web-sys]
+features = [
+  'CanvasRenderingContext2d',
+  'Document',
+  'Element',
+  'HtmlCanvasElement',
+  'Window',
+]
+version = "0.3.4"
+
+[profile.release]
+lto = true
