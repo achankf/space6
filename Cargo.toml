@@ -1,5 +1,6 @@
 [package]
-edition = "2018"
+authors = ['Alfred Chan <alfred8844@gmail.com>']
+edition = "2021"
 name = "space6"
 version = "0.1.0"
 
@@ -7,7 +8,6 @@ version = "0.1.0"
 
 [lib]
 crate-type = ["cdylib"]
-path = "src/Model/lib.rs"
 
 [dependencies]
 console_error_panic_hook = "0.1.6"
@@ -18,6 +18,7 @@ js-sys = "0.3.55"
 log = "0.4.14"
 nalgebra = {version = "0.25.4", features = ["serde-serialize"]}
 noise = "0.7.0"
+num = "0.4"
 ordered-float = {version = "2.7.0", features = ["rand"]}
 poisson-diskus = "1.0.0"
 rand = "0.8.0"
@@ -27,11 +28,14 @@ rstar = "0.9.1"
 serde = {version = "1.0.129", features = ["derive"]}
 voronoice = "0.1.0"
 wasm-bindgen = {version = "0.2.74", features = ["serde-serialize"]}
+yew = "0.18"
 
 [dependencies.web-sys]
 features = [
   'CanvasRenderingContext2d',
   'Document',
+  'DomMatrix',
+  'DomRect',
   'Element',
   'HtmlCanvasElement',
   'Window',
