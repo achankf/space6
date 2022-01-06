@@ -7,7 +7,7 @@ use rand::{
 use voronoice::{BoundingBox, VoronoiBuilder};
 
 use crate::{
-    character::{Character, Parents},
+    dynasty::dynasty::NewCharacter,
     universe::{Universe, UniverseId, Universes},
     CompleteCoor, Game, Time,
 };
@@ -101,45 +101,55 @@ impl Game {
             .iter_mut()
             .for_each(|noise| *noise = normalize(*noise));
 
-        let characters: Vec<_> = {
+        let (dynasties, characters): (Vec<_>, Vec<_>) = {
             let planet = universes.get_universes()[0].get_planet(base_planet_id);
             let land_region_indicies = planet.get_land_indices();
 
-            let pre_build = vec![Character::new(
+            let pre_build = vec![(
                 "John".into(),
                 CompleteCoor::OnPlanetRegion(
                     base_universe_id,
                     base_planet_id,
                     land_region_indicies[0].clone(),
                 ),
-                Parents::Unknown,
-            )]
-            .into_iter();
+            )];
 
             let random = (0..2000).map(|index| {
-                Character::new(
-                    format!("C{}", index),
-                    CompleteCoor::OnPlanetRegion(
-                        base_universe_id,
-                        base_planet_id,
-                        land_region_indicies
-                            .choose(&mut creation_rng)
-                            .expect("cannot randomly choose a land region")
-                            .clone(),
-                    ),
-                    Parents::Unknown,
-                )
+                let name = format!("C{}", index);
+                let coor = CompleteCoor::OnPlanetRegion(
+                    base_universe_id,
+                    base_planet_id,
+                    land_region_indicies
+                        .choose(&mut creation_rng)
+                        .expect("cannot randomly choose a land region")
+                        .clone(),
+                );
+                (name, coor)
             });
 
-            pre_build.chain(random).collect()
+            let total_len = random.len() + 1;
+
+            pre_build.into_iter().chain(random).fold(
+                (Vec::with_capacity(total_len), Vec::with_capacity(total_len)),
+                |(mut dynasties, mut characters), (name, coor)| {
+                    Self::start_dynasty(
+                        &mut dynasties,
+                        &mut characters,
+                        NewCharacter { name, coor },
+                    );
+                    (dynasties, characters)
+                },
+            )
         };
 
         Self {
-            tick: 0,
             characters,
-            universes,
-            player_character_id: 0,
+            dynasties,
+            generation: 0,
             parties: Default::default(),
+            player_character_id: 0,
+            tick: 0,
+            universes,
         }
     }
 

@@ -1,6 +1,6 @@
 use std::fmt;
 
-use super::CharacterId;
+use super::{Character, CharacterId};
 
 impl CharacterId {
     pub fn new_unsafe(index: usize) -> Self {
@@ -11,6 +11,14 @@ impl CharacterId {
 impl From<CharacterId> for usize {
     fn from(id: CharacterId) -> Self {
         id.0
+    }
+}
+
+impl crate::id::Id for CharacterId {
+    type Source = Character;
+
+    fn next(data: &[Self::Source]) -> Self {
+        Self(data.len())
     }
 }
 

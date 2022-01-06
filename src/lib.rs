@@ -1,5 +1,5 @@
-use app::App;
 use character::Character;
+use dynasty::Dynasty;
 use entity::Succ;
 use log::Level;
 use planet::{PlanetId, RegionId};
@@ -10,9 +10,12 @@ use wasm_bindgen::prelude::*;
 mod app;
 mod character;
 mod coor;
+mod dynasty;
 mod economy;
 mod entity;
+mod faction;
 mod game;
+mod id;
 mod planet;
 mod pop;
 mod terrain;
@@ -44,13 +47,17 @@ pub struct Game {
     tick: u64,
     characters: Vec<Character>,
     universes: Universes,
+    dynasties: Vec<Dynasty>,
     parties: Parties,
     player_character_id: usize,
+
+    // gets incremented whenever side-effects to the object happen
+    generation: u64,
 }
 
 #[wasm_bindgen(start)]
 pub fn main() {
     console_log::init_with_level(Level::Debug).expect("error initializing logger");
     console_error_panic_hook::set_once();
-    yew::start_app::<App>();
+    yew::start_app::<crate::app::main::App>();
 }

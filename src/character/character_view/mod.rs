@@ -16,25 +16,27 @@ pub struct CharacterViewProps {
     pub view_model: Weak<RefCell<ViewModel>>,
 }
 
+impl PartialEq for CharacterViewProps {
+    fn eq(&self, other: &Self) -> bool {
+        true
+    }
+}
+
 impl Component for CharacterView {
     type Message = Msg;
     type Properties = CharacterViewProps;
 
-    fn create(props: Self::Properties, _link: ComponentLink<Self>) -> Self {
+    fn create(ctx: &Context<Self>) -> Self {
         Self {
-            view_model: props.view_model,
+            view_model: ctx.props().view_model,
         }
     }
 
-    fn update(&mut self, _msg: Self::Message) -> ShouldRender {
+    fn update(&mut self, ctx: &Context<Self>, _msg: Self::Message) -> bool {
         true
     }
 
-    fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-        true
-    }
-
-    fn view(&self) -> Html {
+    fn view(&self, ctx: &Context<Self>) -> Html {
         let view_model = self
             .view_model
             .upgrade()
@@ -46,29 +48,23 @@ impl Component for CharacterView {
         let characters = &game.characters;
 
         let parents = player_character.get_parents();
-        let parents_rows = parents
-            .iter()
-            .map(|id| {
-                let index: usize = id.clone().into();
-                (id, &characters[index])
-            })
-            .map(|(id, character)| render_character(*id, character, 0));
+        let parents_rows = parents.iter().map(|id| {
+            let index: usize = id.clone().into();
+            let character = &characters[index];
+            render_character(*id, character, 0)
+        });
 
-        let children_rows = player_character
-            .get_children()
-            .map(|id| {
-                let index: usize = id.clone().into();
-                (id, &characters[index])
-            })
-            .map(|(id, character)| render_character(*id, character, 0));
+        let children_rows = player_character.get_children().map(|id| {
+            let index: usize = id.clone().into();
+            let character = &characters[index];
+            render_character(*id, character, 0)
+        });
 
-        let known_people_rows = player_character
-            .get_known_people()
-            .map(|(id, opinion)| {
-                let index: usize = id.clone().into();
-                (id, &characters[index], *opinion)
-            })
-            .map(|(id, character, opinion)| render_character(*id, character, opinion));
+        let known_people_rows = player_character.get_known_people().map(|(id, opinion)| {
+            let index: usize = id.clone().into();
+            let character = &characters[index];
+            render_character(*id, character, 0)
+        });
 
         let player_name = player_character.copy_name();
         let player_coor = player_character.get_coor();
@@ -134,7 +130,7 @@ impl Component for CharacterView {
         }
     }
 
-    fn rendered(&mut self, _first_render: bool) {}
+    fn rendered(&mut self, ctx: &Context<Self>, _first_render: bool) {}
 }
 
 fn render_character(character_id: CharacterId, character: &Character, opinion: i8) -> Html {

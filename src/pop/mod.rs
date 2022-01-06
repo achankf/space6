@@ -63,7 +63,7 @@ impl PopData {
 }
 
 impl Pops {
-    fn get<'a>(&'a self, PopKey(race_id, social_class, education): PopKey) -> Option<&'a PopData> {
+    fn get(&self, PopKey(race_id, social_class, education): PopKey) -> Option<&PopData> {
         let by_race = self.0.get(&race_id);
 
         if let Some(class_map) = by_race {
@@ -74,10 +74,10 @@ impl Pops {
         }
     }
 
-    fn get_mut<'a>(
-        &'a mut self,
+    fn get_mut(
+        &mut self,
         PopKey(race_id, social_class, education): PopKey,
-    ) -> Option<&'a mut PopData> {
+    ) -> Option<&mut PopData> {
         let by_race = self.0.get_mut(&race_id);
 
         if let Some(class_map) = by_race {

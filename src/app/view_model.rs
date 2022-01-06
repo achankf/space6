@@ -1,63 +1,88 @@
-use std::time::Duration;
+use std::{cell::RefCell, rc::Rc};
 
-use yew::{prelude::*, services::IntervalService};
+use yew::prelude::*;
 
-use super::{App, MapSelection, Msg, View, ViewModel};
+use super::{Action, MapSelection, Model, View};
 use crate::{
     planet::{PlanetId, RegionId},
     universe::UniverseId,
     Game,
 };
 
-impl ViewModel {
-    pub fn new(game: Game, link: ComponentLink<App>) -> Self {
+impl Default for Model {
+    fn default() -> Self {
+        let game = Game::create();
+
         Self {
             current_view: View::Map,
-            game,
-            game_loop_task: None,
-            link,
+            game: Rc::new(RefCell::new(game)),
             map_selection: MapSelection::Planet(UniverseId::new_unsafe(0), PlanetId::new_unsafe(0)),
+            should_game_loop_run: false,
+            grid_size: 15.,
+            should_redraw_map: Rc::new(RefCell::new(true)),
         }
     }
+}
 
-    pub fn get_link(&self) -> &ComponentLink<App> {
-        &self.link
+impl Reducible for Model {
+    type Action = Action;
+
+    fn reduce(self: Rc<Self>, action: Self::Action) -> Rc<Self> {
+        let mut next = (*self).clone();
+
+        match action {
+            Action::UpdatePlanetId(id) => next.try_select_planet(id),
+            Action::UpdateUniverseId(id) => next.try_select_universe(id),
+            Action::UpdateRegionId(id) => next.try_select_region(id),
+            Action::SwitchView(view) => next.switch_view(view),
+            Action::PauseGame => next.try_pause_game(),
+            Action::ResumeGame => next.try_resume_game(),
+        };
+
+        next.into()
     }
+}
 
-    pub fn try_select_planet(&mut self, planet_id: PlanetId) -> bool {
+impl PartialEq for Model {
+    fn eq(&self, other: &Self) -> bool {
+        self.current_view == other.current_view
+            && self.map_selection == other.map_selection
+            && self.should_game_loop_run == other.should_game_loop_run
+            && self.game.borrow().generation == other.game.borrow().generation
+    }
+}
+
+impl Model {
+    pub fn try_select_planet(&mut self, planet_id: PlanetId) {
         match self.map_selection {
-            MapSelection::Planet(universe_id, prev_planet_id, ..)
-            | MapSelection::Region(universe_id, prev_planet_id, _) => {
+            MapSelection::Region(universe_id, _, _) => {
+                self.map_selection = MapSelection::Planet(universe_id, planet_id);
+            }
+            MapSelection::Planet(universe_id, prev_planet_id, ..) => {
                 if prev_planet_id != planet_id {
                     self.map_selection = MapSelection::Planet(universe_id, planet_id);
-                    true
-                } else {
-                    false
                 }
             }
             MapSelection::Universe(universe_id) => {
                 self.map_selection = MapSelection::Planet(universe_id, planet_id);
-                true
             }
-        }
+        };
+        *self.should_redraw_map.borrow_mut() = true;
     }
 
-    pub fn try_select_universe(&mut self, universe_id: UniverseId) -> bool {
+    pub fn try_select_universe(&mut self, universe_id: UniverseId) {
         match self.map_selection {
             MapSelection::Universe(prev_universe_id)
             | MapSelection::Planet(prev_universe_id, ..)
             | MapSelection::Region(prev_universe_id, _, _) => {
                 if prev_universe_id != universe_id {
                     self.map_selection = MapSelection::Universe(universe_id);
-                    true
-                } else {
-                    false
                 }
             }
         }
     }
 
-    pub fn try_select_region(&mut self, region_id: RegionId) -> bool {
+    pub fn try_select_region(&mut self, region_id: RegionId) {
         match self.map_selection {
             MapSelection::Universe(_) => {
                 unreachable!("cannot select a region when the planet isn't selected")
@@ -65,41 +90,22 @@ impl ViewModel {
             MapSelection::Planet(prev_universe_id, prev_planet_id) => {
                 self.map_selection =
                     MapSelection::Region(prev_universe_id, prev_planet_id, region_id);
-                true
             }
             MapSelection::Region(prev_universe_id, prev_planet_id, prev_region_id) => {
                 if prev_region_id != region_id {
                     self.map_selection =
                         MapSelection::Region(prev_universe_id, prev_planet_id, region_id);
-                    log::info!("HIHIHIHI");
-                    true
-                } else {
-                    false
                 }
             }
-        }
+        };
     }
 
-    pub fn try_resume_game(&mut self) -> bool {
-        assert!(
-            !self.game_loop_task.is_some(),
-            "cannot resume the game when it's already running"
-        );
-        let tick_per_second = 12;
-        let frequency = Duration::from_millis(1000 / tick_per_second);
-
-        let task = IntervalService::spawn(frequency, self.link.callback(|_| Msg::GameTick));
-        self.game_loop_task = Some(task);
-        true
+    pub fn try_resume_game(&mut self) {
+        self.should_game_loop_run = true;
     }
 
-    pub fn try_pause_game(&mut self) -> bool {
-        let has_task = self.game_loop_task.is_some();
-        assert!(has_task, "cannot pause an already paused game");
-
-        self.game_loop_task = None;
-
-        has_task
+    pub fn try_pause_game(&mut self) {
+        self.should_game_loop_run = false;
     }
 
     pub fn is_planet_selected(&self, planet_id: PlanetId) -> bool {
@@ -110,22 +116,10 @@ impl ViewModel {
         }
     }
 
-    pub fn progress_game_tick(&mut self) -> bool {
-        self.game.progress();
-        true
-    }
-
-    pub fn switch_view(&mut self, view: View) -> bool {
+    pub fn switch_view(&mut self, view: View) {
         if self.current_view != view {
             self.current_view = view;
-            true
-        } else {
-            false
         }
-    }
-
-    pub fn get_game(&self) -> &Game {
-        &self.game
     }
 
     pub fn get_selected_planet_id(&self) -> (UniverseId, Option<PlanetId>) {

@@ -12,7 +12,7 @@ pub struct Universe {
     entity_idgen: Sequence<GalaxyEntityId>,
 }
 
-#[derive(Clone, Copy, Serialize, PartialEq)]
+#[derive(Clone, Copy, Debug, Serialize, PartialEq)]
 pub struct UniverseId(usize);
 
 #[derive(Default)]

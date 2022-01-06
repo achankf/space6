@@ -1,48 +1,50 @@
 use std::{cell::RefCell, rc::Rc};
 
-use yew::{prelude::*, services::interval::IntervalTask};
-
 use crate::{
     planet::{PlanetId, RegionId},
     universe::UniverseId,
     Game,
 };
 
-mod app;
 mod character_view;
+pub(crate) mod main;
 mod map_view;
 mod planet_selector;
 mod view_model;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum View {
     Player,
     Map,
 }
 
 pub struct App {
-    view_model: Rc<RefCell<ViewModel>>,
+    view_model: Rc<RefCell<Model>>,
 }
 
-pub enum Msg {
+#[derive(Debug)]
+pub enum Action {
     UpdateUniverseId(UniverseId),
     UpdatePlanetId(PlanetId),
     UpdateRegionId(RegionId),
     SwitchView(View),
     ResumeGame,
     PauseGame,
-    GameTick,
 }
 
-pub struct ViewModel {
-    current_view: View,
-    game: Game,
-    game_loop_task: Option<IntervalTask>,
-    link: ComponentLink<App>,
-    map_selection: MapSelection,
+#[derive(Clone)]
+pub struct Model {
+    pub current_view: View,
+    pub game: Rc<RefCell<Game>>, // using Rc to avoid deep cloning of the (supposedly big) game object
+    pub should_game_loop_run: bool,
+    pub should_redraw_map: Rc<RefCell<bool>>,
+    pub map_selection: MapSelection,
+    pub grid_size: f64,
 }
 
-#[derive(Clone, Copy)]
+pub type ViewModelContext = yew::UseReducerHandle<Model>;
+
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum MapSelection {
     Universe(UniverseId),
     Planet(UniverseId, PlanetId),

@@ -116,6 +116,108 @@ pub struct LocalMarket {
 pub type PlanetCoor = Point2<f64>;
 
 #[derive(Clone)]
+pub enum CrimeKind {
+    Theft,
+    Arson,
+    Assault,
+    Murder,
+    Fraud,
+    Espionage,
+}
+
+pub enum LawEnforcementKind {
+    Vigilante,
+    Military,
+    Civilian,
+}
+
+pub enum PunishmentKind {
+    Subsidized,
+    Encouraged,
+    None,
+    Fine,
+    Prison,
+    Slavery,
+    Death,
+}
+
+// i.e. how you view the other person
+pub enum Perception {
+    Family,
+    Dynasty,
+    Slave,
+    Citizen,
+    Foreigner,
+    Alien,
+    Monster,
+}
+
+pub enum Severity {
+    None,
+    Low,
+    Medium,
+    High,
+    Extreme,
+}
+
+pub struct Constitution {
+    criminal_law: HashMap<CrimeKind, Severity>,
+    enforcement: LawEnforcementKind,
+}
+
+pub enum LaborLawKind {}
+
+pub struct Civic {
+    labor: LaborLawKind,
+}
+
+// Grassland -> Farmland -> Settlement -> Arcology
+// Forest -> Glassland (deforestation)
+// Forest -> Settlement (elf?)
+// Hill -> Mine
+// Hill -> Terrace
+// Mountain -> Mine
+//
+pub enum Spot {
+    Arcology {
+        population: u32,
+    },
+    Settlement {
+        population: u32,
+        owned_land: u32,
+    },
+    // low density
+    Farmland {
+        population: u32,
+        owned_land: u32,
+    },
+    Mine {
+        population: u32,
+        owned_land: u32,
+    },
+    Grassland {
+        wildlife_population: u32,
+        owned_land: u32,
+    },
+    Forest {
+        wildlife_population: u32,
+        owned_land: u32,
+    },
+    Hill {
+        wildlife_population: u32,
+        owned_land: u32,
+    },
+    Terrace {
+        population: u32,
+        owned_land: u32,
+    },
+    Mountain {
+        wildlife_population: u32,
+        owned_land: u32,
+    },
+}
+
+#[derive(Clone)]
 pub struct Region {
     centroid_coor: PlanetCoor,
     border_vertices: Vec<PlanetCoor>,
@@ -131,9 +233,11 @@ pub struct Region {
     farms: HashMap<Ownership, Farm>,
 
     pops: Pops,
+
+    crime: HashMap<CharacterId, HashMap<CrimeKind, u32>>,
 }
 
-#[derive(PartialEq, Eq, Hash, Clone, Copy, Serialize)]
+#[derive(PartialEq, Eq, Hash, Clone, Copy, Debug, Serialize)]
 pub struct RegionId(usize);
 
 struct RegionIndexData {
@@ -151,5 +255,5 @@ pub struct Planet {
     model_height: f64,
 }
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct PlanetId(usize);

@@ -1,10 +1,10 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::CompleteCoor;
+use crate::{dynasty::DynastyId, CompleteCoor};
 
 mod character;
 mod character_id;
-pub mod character_view;
+// pub mod character_view;
 
 // Each character has a set of fixed random attributes
 pub struct Potential {
@@ -51,29 +51,31 @@ pub struct Wellbeing {
     sleep: u32,
 }
 
-#[derive(Clone, Copy)]
-pub enum Parents {
-    Two(CharacterId, CharacterId),
-    One(CharacterId),
-    Unknown,
+#[derive(Clone)]
+pub enum RelationshipKind {
+    Nemesis, // locked permanantly, unless...
+    Rival,
+    Known, // default
+    Friend,
+    Bro, // gender-neutral close friend
+    Romance,
+    Marriage,
+}
+
+#[derive(Clone)]
+pub struct Relationship {
+    favor: i16,
+    r#type: RelationshipKind,
 }
 
 #[derive(Clone)]
 pub struct Character {
-    name: String,
-    coor: CompleteCoor,
-    parents: Parents,
-    children: HashSet<CharacterId>,
-    character_opinion: HashMap<CharacterId, i8>,
-}
-
-pub struct HumanBody {
-    head: u32,
-    body: u32,
-    left_hand: u32,
-    right_hand: u32,
-    left_foot: u32,
-    right_foot: u32,
+    pub name: String,
+    pub coor: CompleteCoor,
+    pub dynasty_id: DynastyId,
+    pub parents: HashSet<CharacterId>,
+    pub children: HashSet<CharacterId>,
+    pub relationships: HashMap<CharacterId, Relationship>,
 }
 
 #[derive(Clone, Copy, PartialEq, Hash, Eq)]

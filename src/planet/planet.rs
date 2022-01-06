@@ -86,9 +86,7 @@ impl Planet {
             .map(|cell| {
                 let pos = cell.site_position();
                 // map coordinates for model sized boudning rectangle to the noise one
-                let noise = base_noise_map.get_value(pos.x as usize, pos.y as usize);
-
-                noise
+                base_noise_map.get_value(pos.x as usize, pos.y as usize)
             })
             .collect();
 
@@ -159,6 +157,7 @@ impl Planet {
                     local_market: Default::default(),
                     farms: Default::default(),
                     pops: Default::default(),
+                    crime: Default::default(),
                 }
             })
             .collect();
@@ -174,7 +173,7 @@ impl Planet {
                 .collect(),
         );
 
-        let name = format!("Earth {}", creation_rng.next_u32()).to_owned();
+        let name = format!("Earth {}", creation_rng.next_u32());
 
         Self {
             id,
@@ -206,7 +205,7 @@ impl Planet {
 }
 
 fn get_min_max(data: &[f64]) -> (f64, f64) {
-    if data.len() == 0 {
+    if data.is_empty() {
         unreachable!("noise array should have at least 1 value");
     }
     let first = data[0];
