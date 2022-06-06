@@ -17,7 +17,7 @@ getrandom = {version = "0.2.3", features = ["js"]}
 gloo-timers = "0.2.2"
 js-sys = "0.3.55"
 log = "0.4.14"
-nalgebra = {version = "0.25.4", features = ["serde-serialize"]}
+nalgebra = {version = "0.27.1", features = ["serde-serialize"]}
 noise = "0.7.0"
 num = "0.4"
 ordered-float = {version = "2.7.0", features = ["rand"]}
